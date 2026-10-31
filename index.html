@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ডিলার ম্যানেজমেন্ট</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mut:#667085;--pri:#0f6e56;--bd:#e3e6ea;--ok:#127a3d}
+@media (prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#eceff2;--mut:#98a2b3;--pri:#3ecf9f;--bd:#2d333a;--ok:#4ade80;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 'Hind Siliguri',system-ui,sans-serif}
+header{padding:12px 16px;font-weight:700;background:var(--pri);color:#fff;display:flex;justify-content:space-between;gap:8px}
+header button{padding:4px 10px;background:transparent;color:#fff;border-color:#fff8}
+nav{display:flex;gap:6px;padding:10px 12px;position:sticky;top:0;background:var(--bg);z-index:5}nav button{flex:1}
+main,#auth{padding:0 12px 40px;max-width:900px;margin:auto}#auth{max-width:420px;padding-top:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+button,input,select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+button{cursor:pointer}button.on,button.pri{background:var(--pri);color:#fff;border-color:var(--pri)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.row>*{flex:1 1 130px}
+.wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{padding:8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:600}tfoot td{font-weight:700}
+.bar{height:8px;border-radius:4px;background:var(--bd);overflow:hidden;min-width:70px}.bar i{display:block;height:100%;background:var(--ok)}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.kpi div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}.kpi b{display:block;font-size:22px}.kpi span{color:var(--mut);font-size:13px}
+.mut{color:var(--mut);font-size:13px}.v{display:none}.v.show{display:block}.tag{padding:2px 8px;border-radius:99px;border:1px solid var(--bd);font-size:12px}
+#pdf{position:absolute;left:-9999px;top:0;width:794px;padding:32px;background:#fff;color:#111;font-family:'Hind Siliguri',sans-serif}
+#pdf table{min-width:0;font-size:13px}#pdf th,#pdf td{border-bottom:1px solid #ddd;color:#111}
+</style></head><body>
+<div id="auth"><div class="card"><h2 id="at" style="margin:0 0 10px">🧱 লগইন</h2>
+ <div id="nmr" style="display:none"><div class="row"><input id="nm" placeholder="আপনার নাম"></div><div class="row"><input id="ph" type="tel" placeholder="ফোন নম্বর (যেমন 01712345678)"></div><div class="row"><input id="ar" placeholder="এলাকা"></div></div>
+ <div class="row"><input id="em" type="email" placeholder="জিমেইল (example@gmail.com)"></div><div class="row"><input id="pw" type="password" placeholder="পাসওয়ার্ড"></div>
+ <button class="pri" id="go" style="width:100%">লগইন</button><p id="am" class="mut"></p>
+ <button id="sw" style="width:100%">নতুন রেজিস্ট্রেশন</button> <button id="fg" style="width:100%;margin-top:8px">পাসওয়ার্ড ভুলে গেছেন?</button></div></div>
+<div id="app" style="display:none"><header><button id="who"></button><button id="out">লগআউট</button></header><div id="pf" class="card" style="display:none;margin:10px 12px"></div><nav id="nav"></nav>
+<main>
+<section id="rep" class="v">
+ <div class="card"><div class="row" id="vsel" style="display:none"><label>কোন আইডির রিপোর্ট <select id="vu"></select></label></div><div class="row"><button data-p="today">আজ</button><button data-p="month">এই মাস</button><button data-p="last">গত মাস</button><button data-p="all">সব</button></div>
+ <div class="row"><label>শুরু <input type="date" id="from"></label><label>শেষ <input type="date" id="to"></label></div>
+ <button class="pri" id="dl" style="width:100%">⬇ পিডিএফ ডাউনলোড</button><div id="msg" class="mut"></div></div>
+ <div class="kpi" id="kpi"></div><div class="card wrap" id="tbl"></div>
+</section>
+<section id="ent" class="v">
+ <div class="card"><div class="row"><select id="edl"></select><input type="date" id="edt"></div>
+ <div class="row"><select id="ety"><option value="order">অর্ডার</option><option value="delivery">ডেলিভারি (ডিলার নিয়েছে)</option></select><input type="number" id="ebg" min="1" placeholder="কত ব্যাগ"></div>
+ <button class="pri" id="eadd" style="width:100%">যোগ করুন</button></div>
+ <div class="card wrap"><b>আপনার ডিলারদের এন্ট্রি (সাম্প্রতিক)</b><table id="elist"></table></div>
+</section>
+<section id="dlr" class="v">
+ <div class="card"><div class="row"><input id="dn" placeholder="ডিলারের নাম"><input id="dp" placeholder="ফোন"></div>
+ <div class="row"><input id="da" placeholder="ঠিকানা"><input id="dt" type="number" placeholder="মাসিক টার্গেট (ব্যাগ)"></div>
+ <button class="pri" id="dadd" style="width:100%">ডিলার যোগ করুন</button></div>
+ <div class="card wrap"><table id="dlist"></table></div>
+</section>
+<section id="adm" class="v">
+ <div class="card wrap"><b>ইউজার ব্যবস্থাপনা</b><table id="ulist"></table></div>
+ <div class="card"><b>ব্যাকআপ</b><div class="mut">সব এন্ট্রি এক্সেলে খোলার মতো ফাইলে নামান।</div><button class="pri" id="bk" style="width:100%;margin-top:8px">⬇ ব্যাকআপ (CSV) নামান</button></div>
+ <div class="card wrap"><b>মুছে ফেলা এন্ট্রি (ফেরত আনা যাবে)</b><table id="dtx"></table></div>
+ <div class="card wrap"><b>মুছে ফেলা ডিলার (ফেরত আনা যাবে)</b><table id="ddl"></table></div>
+ <div class="card wrap"><b>কোন আইডি কত কাজ করেছে</b><table id="ua"></table></div>
+ <div class="card wrap"><b>কে কখন কী করল (সাম্প্রতিক ৫০টি)</b><table id="lg"></table></div>
+</section>
+</main></div><div id="pdf"></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,addDoc,updateDoc,collection,getDocs,query,where,orderBy,limit}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyARcN84IZxhnP51jBW6l4BvBRWotWDYTlY",authDomain:"dealer-app-e02f7.firebaseapp.com",projectId:"dealer-app-e02f7",storageBucket:"dealer-app-e02f7.firebasestorage.app",messagingSenderId:"781904862789",appId:"1:781904862789:web:af56997990f8a9714b4d2c"});
+const auth=getAuth(app),db=getFirestore(app),C=n=>collection(db,n),$=s=>document.querySelector(s),n=x=>Number(x).toLocaleString('bn-BD');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const ROLE={admin:'অ্যাডমিন',user:'ইউজার'},ST={ok:'চালু',pending:'অনুমোদনের অপেক্ষায়',off:'সরানো হয়েছে'},TY={order:'অর্ডার',delivery:'ডেলিভারি'};
+const TABS={admin:['adm','rep'],user:['rep','ent','dlr']},TL={rep:'রিপোর্ট',ent:'এন্ট্রি',dlr:'ডিলার',adm:'অ্যাডমিন'};
+let me=null,D={dealers:[],tx:[],users:[],log:[]},mode='in',VID='';
+const cu=()=>me.role=='admin'?VID:me.uid,live=()=>D.tx.filter(t=>!t.del),dl=()=>D.dealers.filter(d=>!d.del&&d.owner==cu()),vd=id=>dl().some(d=>d.id==id);
+const dn=id=>(D.dealers.find(d=>d.id==id)||{name:'?'}).name,un=id=>(D.users.find(u=>u.uid==id)||{name:me&&id==me.uid?me.name:'?'}).name;
+const lg=a=>addDoc(C('log'),{u:me.uid,uname:me.name,a,ts:Date.now()});
+const am=m=>$('#am').textContent=m,rd=async q=>(await getDocs(q)).docs.map(d=>({id:d.id,...d.data()}));
+async function load(){
+ if(me.role=='admin'){[D.users,D.dealers,D.tx,D.log]=await Promise.all([rd(C('users')),rd(C('dealers')),rd(C('tx')),rd(query(C('log'),orderBy('ts','desc'),limit(50)))]);D.users.forEach(u=>u.uid=u.id)}
+ else[D.dealers,D.tx]=await Promise.all([rd(query(C('dealers'),where('owner','==',me.uid))),rd(query(C('tx'),where('owner','==',me.uid)))]);
+ render()}
+function setMode(){$('#nmr').style.display=mode=='up'?'block':'none';$('#at').textContent=mode=='up'?'🧱 নতুন রেজিস্ট্রেশন':'🧱 লগইন';$('#go').textContent=mode=='up'?'রেজিস্ট্রেশন করুন':'লগইন';$('#sw').textContent=mode=='up'?'লগইনে ফিরুন':'নতুন রেজিস্ট্রেশন';am('')}
+$('#sw').onclick=()=>{mode=mode=='in'?'up':'in';setMode()};
+$('#fg').onclick=async()=>{const e=$('#em').value.trim();if(!e)return am('উপরে জিমেইল লিখে আবার চাপুন');try{await sendPasswordResetEmail(auth,e)}catch(x){}am('ঠিকানাটি নিবন্ধিত থাকলে পাসওয়ার্ড রিসেটের লিংক ইমেইলে গেছে।')};
+$('#go').onclick=async()=>{const e=$('#em').value.trim().toLowerCase(),p=$('#pw').value;
+ if(mode=='in'){try{await signInWithEmailAndPassword(auth,e,p)}catch(x){am('ইমেইল বা পাসওয়ার্ড ভুল')}return}
+ const name=$('#nm').value.trim(),ph=$('#ph').value.trim().replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c)).replace(/[\s-]/g,''),area=$('#ar').value.trim();
+ if(!name||!area)return am('নাম ও এলাকা দিন');if(!/^01[3-9]\d{8}$/.test(ph))return am('সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (যেমন 01712345678)');
+ if(!/^\S+@\S+\.\S+$/.test(e))return am('সঠিক জিমেইল দিন');if(p.length<6)return am('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+ try{const c=await createUserWithEmailAndPassword(auth,e,p);await setDoc(doc(db,'users',c.user.uid),{name,phone:ph,email:e,area,role:'user',status:'pending',joined:iso(new Date())});await signOut(auth);
+  ['#nm','#ph','#ar','#em','#pw'].forEach(s=>$(s).value='');mode='in';setMode();am('রেজিস্ট্রেশন হয়েছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।')}
+ catch(x){am(x.code=='auth/email-already-in-use'?'এই জিমেইল আগেই নিবন্ধিত':'রেজিস্ট্রেশন হয়নি, আবার চেষ্টা করুন')}};
+onAuthStateChanged(auth,async u=>{
+ if(!u){me=null;$('#app').style.display='none';$('#auth').style.display='block';return}
+ const s=await getDoc(doc(db,'users',u.uid));if(!s.exists())return;const x=s.data();
+ if(x.status!='ok'){await signOut(auth);am(x.status=='pending'?'আপনার অ্যাকাউন্ট অ্যাডমিনের অনুমোদনের অপেক্ষায় আছে।':'এই আইডি সরিয়ে দেওয়া হয়েছে।');return}
+ me={uid:u.uid,...x};await start()});
+function prof(){const u=me,r=(a,b)=>`<tr><td class="mut" style="text-align:left">${a}</td><td style="text-align:left">${esc(b||'-')}</td></tr>`;
+ $('#pf').innerHTML=`<b>আমার প্রোফাইল</b><table style="min-width:0;margin-top:6px">${r('নাম',u.name)}${r('ফোন',u.phone)}${r('জিমেইল',u.email)}${r('এলাকা',u.area)}${r('ভূমিকা',ROLE[u.role])}${r('অবস্থা',ST[u.status])}${r('রেজিস্ট্রেশনের তারিখ',u.joined)}</table>`}
+$('#who').onclick=()=>{const p=$('#pf');if(p.style.display=='none'){prof();p.style.display='block'}else p.style.display='none'};
+$('#out').onclick=()=>{$('#pf').style.display='none';signOut(auth)};
+function show(id){document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.v==id));document.querySelectorAll('.v').forEach(s=>s.classList.toggle('show',s.id==id))}
+async function start(){$('#auth').style.display='none';$('#app').style.display='block';$('#who').textContent='👤 '+me.name+' · '+ROLE[me.role];
+ const t=TABS[me.role];$('#nav').innerHTML=t.map(k=>`<button data-v="${k}">${TL[k]}</button>`).join('');$('#nav').onclick=e=>{if(e.target.dataset.v)show(e.target.dataset.v)};
+ $('#edt').value=iso(new Date());await load();
+ if(me.role=='admin')VID=(D.users.find(u=>u.role!='admin'&&u.status=='ok')||{uid:''}).uid;show(t[0]);preset('month')}
+function months(a,b){const s=new Date(a+'T00:00'),e=new Date(b+'T00:00');let m=0;
+ for(let d=new Date(s.getFullYear(),s.getMonth(),1);d<=e;d.setMonth(d.getMonth()+1)){
+  const ms=new Date(d.getFullYear(),d.getMonth(),1),me2=new Date(d.getFullYear(),d.getMonth()+1,0),lo=ms>s?ms:s,hi=me2<e?me2:e;
+  m+=(Math.round((hi-lo)/864e5)+1)/me2.getDate()}return m}
+const P={from:'',to:''};
+function rows(){const mo=months(P.from,P.to),L=live();
+ return dl().map(d=>{let o=0,v=0;L.forEach(t=>{if(t.d==d.id&&t.date>=P.from&&t.date<=P.to){t.type=='order'?o+=t.bags:v+=t.bags}});
+  const tg=Math.round(d.target*mo);return{d,o,v,b:o-v,tg,p:tg?Math.round(v*100/tg):0}})}
+function table(rs,bars){const T=k=>rs.reduce((a,r)=>a+r[k],0),tp=T('tg')?Math.round(T('v')*100/T('tg')):0;
+ return`<table><thead><tr><th>ডিলার</th><th>অর্ডার</th><th>ডেলিভারি</th><th>কোম্পানি থেকে পাবে</th><th>টার্গেট</th><th>পূরণ</th></tr></thead><tbody>`+
+ rs.map(r=>`<tr><td>${esc(r.d.name)}</td><td>${n(r.o)}</td><td>${n(r.v)}</td><td>${n(r.b)}</td><td>${n(r.tg)}</td><td>${n(r.p)}%${bars?` <div class="bar"><i style="width:${Math.min(r.p,100)}%"></i></div>`:''}</td></tr>`).join('')+
+ `</tbody><tfoot><tr><td>মোট</td><td>${n(T('o'))}</td><td>${n(T('v'))}</td><td>${n(T('b'))}</td><td>${n(T('tg'))}</td><td>${n(tp)}%</td></tr></tfoot></table>`}
+function render(){if(!me)return;
+ if(me.role=='admin'){const us=D.users.filter(u=>u.role!='admin'&&u.status!='pending');$('#vu').innerHTML=us.map(u=>`<option value="${u.uid}"${u.uid==VID?' selected':''}>${esc(u.name)}</option>`).join('');$('#vsel').style.display='flex'}
+ const rs=rows(),T=k=>rs.reduce((a,r)=>a+r[k],0),tp=T('tg')?Math.round(T('v')*100/T('tg')):0;
+ $('#kpi').innerHTML=[['মোট অর্ডার (ব্যাগ)',n(T('o'))],['মোট ডেলিভারি',n(T('v'))],['কোম্পানি থেকে পাবে',n(T('b'))],['টার্গেট পূরণ',n(tp)+'%']].map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+ $('#tbl').innerHTML=table(rs,true);
+ $('#edl').innerHTML=dl().map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+ $('#elist').innerHTML=live().filter(t=>vd(t.d)).sort((a,b)=>b.date.localeCompare(a.date)||(b.ts||0)-(a.ts||0)).slice(0,15).map(t=>`<tr><td>${esc(dn(t.d))}</td><td>${t.date}</td><td>${TY[t.type]}</td><td>${n(t.bags)}</td><td><button data-x="${t.id}">✕</button></td></tr>`).join('');
+ $('#dlist').innerHTML=`<tr><th>নাম</th><th>ফোন</th><th>ঠিকানা</th><th>মাসিক টার্গেট (ব্যাগ)</th><th></th></tr>`+dl().map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.phone)}</td><td>${esc(d.addr)}</td><td><input type="number" min="0" value="${d.target}" data-t="${d.id}" style="width:90px;text-align:right"></td><td><button data-rm="${d.id}">মুছুন</button></td></tr>`).join('');
+ if(me.role!='admin')return;
+ $('#ulist').innerHTML=`<tr><th>নাম / যোগাযোগ</th><th>ভূমিকা</th><th>অবস্থা</th><th></th></tr>`+D.users.map(u=>`<tr><td>${esc(u.name)}<br><span class="mut">${esc(u.phone)} · ${esc(u.email)}<br>এলাকা: ${esc(u.area)}</span></td><td>${ROLE[u.role]}</td><td><span class="tag">${ST[u.status]}</span></td><td>${u.uid==me.uid?'':u.status=='ok'?`<button data-u="${u.uid}|off">আইডি সরান</button>`:u.status=='pending'?`<button class="pri" data-u="${u.uid}|ok">অনুমোদন দিন</button> <button data-u="${u.uid}|off">সরান</button>`:`<button data-u="${u.uid}|ok">আবার চালু করুন</button>`}</td></tr>`).join('');
+ $('#ua').innerHTML=`<tr><th>আইডি</th><th>এন্ট্রি</th><th>অর্ডার (ব্যাগ)</th><th>ডেলিভারি (ব্যাগ)</th><th>শেষ কাজ</th></tr>`+D.users.filter(u=>u.role!='admin').map(u=>{const L=live().filter(t=>t.by==u.uid),s=ty=>L.filter(t=>t.type==ty).reduce((a,t)=>a+t.bags,0),l=D.log.find(x=>x.u==u.uid);return`<tr><td>${esc(u.name)}</td><td>${n(L.length)}</td><td>${n(s('order'))}</td><td>${n(s('delivery'))}</td><td>${l?new Date(l.ts).toLocaleString('bn-BD'):'-'}</td></tr>`}).join('');
+ const dd=D.dealers.filter(d=>d.del),del=D.tx.filter(t=>t.del);
+ $('#ddl').innerHTML=dd.length?dd.map(d=>`<tr><td>${esc(d.name)}</td><td><button data-sd="${d.id}">ফেরত আনুন</button></td></tr>`).join(''):'<tr><td class="mut">কোনো ডিলার মোছা হয়নি</td></tr>';
+ $('#dtx').innerHTML=del.length?del.map(t=>`<tr><td>${esc(dn(t.d))}</td><td>${t.date}</td><td>${TY[t.type]}</td><td>${n(t.bags)}</td><td><button data-s="${t.id}">ফেরত আনুন</button></td></tr>`).join(''):'<tr><td class="mut">কিছু মোছা হয়নি</td></tr>';
+ $('#lg').innerHTML=D.log.length?D.log.map(l=>`<tr><td>${new Date(l.ts).toLocaleString('bn-BD')}</td><td>${esc(l.uname)}</td><td style="text-align:left">${esc(l.a)}</td></tr>`).join(''):'<tr><td class="mut">এখনও কোনো কাজ হয়নি</td></tr>'}
+function setRange(a,b){P.from=a;P.to=b;$('#from').value=a;$('#to').value=b;render()}
+function preset(k){const t=new Date(),y=t.getFullYear(),m=t.getMonth();
+ if(k=='today')setRange(iso(t),iso(t));else if(k=='month')setRange(iso(new Date(y,m,1)),iso(new Date(y,m+1,0)));
+ else if(k=='last')setRange(iso(new Date(y,m-1,1)),iso(new Date(y,m,0)));
+ else setRange(D.tx.length?D.tx.map(x=>x.date).sort()[0]:iso(t),iso(t))}
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>preset(b.dataset.p));
+$('#from').onchange=$('#to').onchange=()=>setRange($('#from').value,$('#to').value);
+$('#vu').onchange=()=>{VID=$('#vu').value;render()};
+$('#eadd').onclick=async()=>{const b=+$('#ebg').value,d=$('#edl').value;if(!b||!d)return;const ty=$('#ety').value;
+ await addDoc(C('tx'),{owner:me.uid,d,date:$('#edt').value||iso(new Date()),type:ty,bags:b,by:me.uid,ts:Date.now()});await lg(`${dn(d)}: ${TY[ty]} ${n(b)} ব্যাগ যোগ`);$('#ebg').value='';load()};
+$('#elist').onclick=async e=>{const t=D.tx.find(t=>t.id==e.target.dataset.x);if(t){await updateDoc(doc(db,'tx',t.id),{del:true});await lg(`${dn(t.d)}: ${n(t.bags)} ব্যাগের এন্ট্রি মুছেছে`);load()}};
+$('#dadd').onclick=async()=>{const nm=$('#dn').value.trim();if(!nm)return;await addDoc(C('dealers'),{owner:me.uid,name:nm,phone:$('#dp').value,addr:$('#da').value,target:+$('#dt').value||0});await lg('নতুন ডিলার: '+nm);['#dn','#dp','#da','#dt'].forEach(s=>$(s).value='');load()};
+$('#dlist').onchange=async e=>{const d=D.dealers.find(d=>d.id==e.target.dataset.t);if(d){const v=Math.max(0,+e.target.value||0);await updateDoc(doc(db,'dealers',d.id),{target:v});await lg(`${d.name}: মাসিক টার্গেট ${n(v)} ব্যাগ`);load()}};
+$('#dlist').onclick=async e=>{const d=D.dealers.find(d=>d.id==e.target.dataset.rm);if(d&&confirm(`${d.name} মুছবেন? (অ্যাডমিন চাইলে ফেরত আনতে পারবে)`)){await updateDoc(doc(db,'dealers',d.id),{del:true});await lg('ডিলার মুছেছে: '+d.name);load()}};
+$('#adm').onclick=async e=>{const d=e.target.dataset;
+ if(d.u){const[i,s]=d.u.split('|'),u=D.users.find(u=>u.uid==i);await updateDoc(doc(db,'users',i),{status:s});await lg(`${u.name}: ${ST[s]}`);load()}
+ if(d.s){await updateDoc(doc(db,'tx',d.s),{del:false});await lg('মোছা এন্ট্রি ফেরত আনা হয়েছে');load()}
+ if(d.sd){await updateDoc(doc(db,'dealers',d.sd),{del:false});await lg('মোছা ডিলার ফেরত আনা হয়েছে');load()}};
+const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+$('#bk').onclick=()=>{const c=['তারিখ,আইডি,ডিলার,ধরন,ব্যাগ,মোছা',...D.tx.map(t=>[t.date,q(un(t.by)),q(dn(t.d)),TY[t.type],t.bags,t.del?'হ্যাঁ':''].join(','))].join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+c],{type:'text/csv'}));a.download='backup-'+iso(new Date())+'.csv';a.click()};
+$('#dl').onclick=async()=>{const m=$('#msg');m.textContent='পিডিএফ তৈরি হচ্ছে...';
+ try{const box=$('#pdf');box.innerHTML=`<h2 style="margin:0 0 4px">ডিলার সেলস রিপোর্ট — ${esc(un(cu()))}</h2><div style="color:#555;margin-bottom:16px">${P.from} থেকে ${P.to}</div>`+table(rows(),false);
+  await document.fonts.ready;const c=await html2canvas(box,{scale:2,backgroundColor:'#fff'}),doc2=new window.jspdf.jsPDF('p','mm','a4'),w=210,h=c.height*w/c.width,img=c.toDataURL('image/png');
+  doc2.addImage(img,'PNG',0,0,w,h);let y=0,left=h-297;while(left>0){y-=297;doc2.addPage();doc2.addImage(img,'PNG',0,y,w,h);left-=297}
+  doc2.save(`report_${P.from}_${P.to}.pdf`);m.textContent='পিডিএফ নামানো হয়েছে।'}catch(e){m.textContent='পিডিএফ তৈরি করা যায়নি।'}};
+setMode();
+</script></body></html>
